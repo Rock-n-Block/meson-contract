@@ -228,6 +228,11 @@ contract MesonContract is IStaking, Ownable {
         return _unstake(amount);
     }
 
+    /**
+     * @param user Address of account to calculate reward.
+     * @param amount number of token to get reward for.
+     * @return Amount of distribution tokens to receive after unstake.
+     */
     function calculateRewardFor(address user, uint256 amount) public view returns (uint256) {
         // 1. User Accounting
         Stake[] storage accountStakes = _userStakes[user];
@@ -272,6 +277,36 @@ contract MesonContract is IStaking, Ownable {
         }
 
         return rewardAmount;
+    }
+
+    /**
+     * @param amount number of token to get reward for.
+     * @return Amount of distribution tokens to receive after unstake.
+     */
+    function estimateMaxReward(uint256 amount) public view returns (uint256) {
+
+
+        // equals to StakingSharesToBurn
+        uint256 approxMintedStakingShares = (totalStakingShares > 0)
+            ? totalStakingShares.mul(amount).div(totalStaked())
+            : amount.mul(_initialSharesPerToken);
+        
+        if (approxMintedStakingShares == 0 ||  totalUnlocked() == 0) {
+            return 0;
+        }
+
+        uint256 approxStakingSharesSeconds = approxMintedStakingShares.mul(bonusPeriodSec);
+        // uint256 rewardAmount = computeNewReward(0, approxStakingSharesSeconds, bonusPeriodSec);
+
+        uint256 overallStakingSharesSeconds = approxStakingSharesSeconds.add(_totalStakingShareSeconds);
+
+        uint256 newRewardTokens =
+            totalUnlocked()
+            .mul(approxStakingSharesSeconds)
+            .div(overallStakingSharesSeconds);
+
+        return newRewardTokens;
+        //
     }
 
     /**

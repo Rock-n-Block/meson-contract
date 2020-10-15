@@ -144,5 +144,86 @@ contract(
             const totalRew = await mesonContract.totalRewardsClaimed(account1);
             console.log(totalRew.toString())
         })
+
+        it ('#0 max reward getter validation', async () => {
+            console.log(mesonContract.address)
+            console.log(mesonPoolUnlocked.address)
+
+            const pionAmount = TOKEN_AMOUNT.mul(new BN((10 ** 6).toString()))
+
+            await distributionToken.mint(mesonPoolUnlocked.address, pionAmount, {from: deployer})
+
+            expect(await distributionToken.balanceOf(mesonPoolUnlocked.address)).to.be.bignumber.that.equals(pionAmount)
+
+            await stakingToken.mint(account1, TOKEN_AMOUNT, {from: deployer})
+            await stakingToken.mint(account2, TOKEN_AMOUNT, {from: deployer})
+
+            expect(await stakingToken.balanceOf(account1)).to.be.bignumber.that.equals(TOKEN_AMOUNT)
+
+            const estimatedReward = await mesonContract.estimateMaxReward(TOKEN_AMOUNT);
+            console.log(estimatedReward.toString());
+
+            // const beforeStakeTime = await getBlockchainTimestamp();
+            // console.log(beforeStakeTime)
+
+            // console.log('reward before stake')
+            // const rewardBefore = await  mesonContract.calculateRewardFor(account1,pionAmount )
+            // console.log(rewardBefore.toString())
+
+            // await stakingToken.approve(mesonContract.address, TOKEN_AMOUNT, {from: account1})
+            // await mesonContract.stake(TOKEN_AMOUNT, ETH_ZERO_ADDERSS, {from: account1})
+
+            // /* const halfPeriodTime = BONUS_PERIOD_SEC / 2;
+            // await helper.advanceTimeAndBlock(halfPeriodTime); */
+
+            // const periodTime = BONUS_PERIOD_SEC;
+            // await helper.advanceTimeAndBlock(periodTime);
+
+            // console.log('reward after stake and no invokation');
+            // const totalStakedNo = await mesonContract.totalStaked();
+            // const totalStakedSharesNo = await mesonContract.totalStakingShares();
+            // // const totalStakedSharesNo_ = await mesonContract._totalStakingShareSeconds();
+            // console.log(totalStakedNo.toString());
+            // console.log(totalStakedSharesNo.toString());
+            // // console.log(totalStakedSharesNo_.toString());
+            // const rewardAfter = await  mesonContract.calculateRewardFor(account1,pionAmount )
+            // console.log(rewardAfter.toString())
+
+
+            // await stakingToken.approve(mesonContract.address, TOKEN_AMOUNT, {from: account2})
+            // await mesonContract.stake(TOKEN_AMOUNT, ETH_ZERO_ADDERSS, {from: account2})
+
+            // console.log('reward after stake and invokation')
+            // const rewardAfter2 = await  mesonContract.calculateRewardFor(account1,pionAmount )
+            // console.log(rewardAfter2.toString())
+
+            // await helper.advanceTimeAndBlock(periodTimeHalf);
+
+            // const afterStakeTime = await getBlockchainTimestamp();
+            // console.log(afterStakeTime)
+
+            // console.log('reward before unstake')
+            // const rewardBefore2 = await  mesonContract.calculateRewardFor(account1,pionAmount )
+            // console.log(rewardBefore2.toString())
+
+            // console.log('shares')
+            // const totalStakingShares = await mesonContract.totalStakingShares();
+            // console.log(totalStakingShares.toString())
+            // const totalStaked = await mesonContract.totalStaked();
+            // console.log(totalStaked.toString());
+            // console.log(TOKEN_AMOUNT.toString())
+            // const totalStakedFor = await mesonContract.totalStakedFor(account1);
+            // console.log(totalStakedFor.toString())
+            // const reward = await mesonContract.calculateRewardFor(account1,pionAmount )
+            // console.log(reward.toString())
+
+            // await mesonContract.unstake(TOKEN_AMOUNT, ETH_ZERO_ADDERSS, {from: account1})
+            // const distTokenBalance = await distributionToken.balanceOf(account1)
+            // console.log(distTokenBalance.toString())
+
+            // const totalRew = await mesonContract.totalRewardsClaimed(account1);
+            // console.log(totalRew.toString())
+        })
+
     }
 )
