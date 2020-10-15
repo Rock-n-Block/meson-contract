@@ -74,6 +74,7 @@ contract MesonContract is IStaking, Ownable {
     }
 
     // Aggregated staking values per user
+    mapping(address => uint256) public totalRewardsClaimed;
     mapping(address => UserTotals) private _userTotals;
 
     // The collection of stakes for each user. Ordered by timestamp, earliest to latest.
@@ -164,6 +165,8 @@ contract MesonContract is IStaking, Ownable {
      */
     function stakeFor(address user, uint256 amount, bytes calldata data) external {
         _stakeFor(msg.sender, user, amount);
+
+        updateAccounting();
     }
 
     /**
@@ -213,6 +216,8 @@ contract MesonContract is IStaking, Ownable {
      */
     function unstake(uint256 amount, bytes calldata data) external {
         _unstake(amount);
+
+        updateAccounting();
     }
 
     /**
@@ -223,17 +228,23 @@ contract MesonContract is IStaking, Ownable {
         return _unstake(amount);
     }
 
-    function calculateRewardFor(address user) public view returns (uint256) {
-        uint256 amount = totalStakedFor(user);
-        
-        uint256 stakingSharesToBurn = totalStakingShares.mul(amount).div(totalStaked());
-        if (stakingSharesToBurn == 0) {
-            // MesonContract: Unable to unstake amount this small'
+    function calculateRewardFor(address user, uint256 amount) public view returns (uint256) {
+        // 1. User Accounting
+        Stake[] storage accountStakes = _userStakes[user];
+
+        if (accountStakes.length  == 0 || _totalStakingShareSeconds == 0) {
             return 0;
         }
 
-        // 1. User Accounting
-        Stake[] storage accountStakes = _userStakes[user];
+        uint256 maxUserAmount = totalStakedFor(user);
+
+        if (amount > maxUserAmount ) {
+            amount = maxUserAmount;
+        } else if (amount == 0 ) {
+            return 0;
+        }
+
+        uint256 stakingSharesToBurn = totalStakingShares.mul(amount).div(totalStaked());
 
         // Redeem from most recent stake and go backwards in time.
         uint256 stakingShareSecondsToBurn = 0;
@@ -318,6 +329,7 @@ contract MesonContract is IStaking, Ownable {
         // Already set in updateAccounting
         // _lastAccountingTimestampSec = now;
 
+        totalRewardsClaimed[msg.sender] = totalRewardsClaimed[msg.sender].add(rewardAmount);
         // interactions
         require(_stakingPool.transfer(msg.sender, amount),
             'MesonContract: transfer out of staking pool failed');
